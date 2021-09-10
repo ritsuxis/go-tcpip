@@ -10,16 +10,16 @@ import (
 type ProtocolRxHandler func(dev *Device, data []byte, src, dst HardwareAddress) error
 
 type packet struct {
-	dev *Device
+	dev  *Device
 	data []byte
-	src HardwareAddress
-	dst HardwareAddress
+	src  HardwareAddress
+	dst  HardwareAddress
 }
 
 type entry struct {
-	Type EthernetType
+	Type      EthernetType
 	rxHandler ProtocolRxHandler
-	rxQueue chan *packet // チャネル
+	rxQueue   chan *packet // チャネル
 }
 
 var protocols = sync.Map{} // キャッシュみたいなやつ
@@ -30,9 +30,9 @@ func RegisterProtocol(Type EthernetType, rxHandler ProtocolRxHandler) error {
 		return fmt.Errorf("protocol `%s` is already registered", Type)
 	}
 	entry := &entry{
-		Type: Type,
+		Type:      Type,
 		rxHandler: rxHandler,
-		rxQueue: make(chan *packet),
+		rxQueue:   make(chan *packet),
 	}
 
 	// launch rx loop

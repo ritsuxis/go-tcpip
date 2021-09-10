@@ -24,8 +24,8 @@ type LinkDevice interface {
 
 type Device struct {
 	LinkDevice
-	errors     chan error
-	interfaces []ProtocolInterface
+	errors       chan error
+	interfaces   []ProtocolInterface
 	sync.RWMutex // 排他制御
 }
 
@@ -63,10 +63,10 @@ func RegisterDevice(link LinkDevice) (*Device, error) {
 	return dev, nil
 }
 
-func rxHander(link LinkDevice, protocol EthernetType, payload []byte, src, dst HardwareAddress){
+func rxHander(link LinkDevice, protocol EthernetType, payload []byte, src, dst HardwareAddress) {
 	protocols.Range(func(key, value interface{}) bool {
 		var (
-			Type = key.(EthernetType)
+			Type  = key.(EthernetType)
 			entry = value.(*entry)
 		)
 		if Type == EthernetType(protocol) {
@@ -75,10 +75,10 @@ func rxHander(link LinkDevice, protocol EthernetType, payload []byte, src, dst H
 				panic("device not found")
 			}
 			entry.rxQueue <- &packet{
-				dev: dev.(*Device),
+				dev:  dev.(*Device),
 				data: payload,
-				src: src,
-				dst: dst,
+				src:  src,
+				dst:  dst,
 			}
 			return false
 		}

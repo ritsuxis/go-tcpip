@@ -11,7 +11,7 @@ import (
 // opcode
 const (
 	operationRequest = 1
-	operationReply  = 2
+	operationReply   = 2
 )
 
 func init() {
@@ -41,15 +41,14 @@ func rxHandler(dev *net.Device, data []byte, src, dst net.HardwareAddress) error
 	return nil
 }
 
-
-func reply(iface net.ProtocolInterface, targetProtocolAddress []byte, targetHardwareAddress []byte) error{
+func reply(iface net.ProtocolInterface, targetProtocolAddress []byte, targetHardwareAddress []byte) error {
 	dev := iface.Device()
 	hdr := header{
-		HardwareType: dev.Type(),
-		ProtocolType: iface.Type(),
+		HardwareType:          dev.Type(),
+		ProtocolType:          iface.Type(),
 		HardwareAddressLength: dev.Address().Len(),
 		ProtocolAddressLength: iface.Address().Len(),
-		OperationCode: operationReply,
+		OperationCode:         operationReply,
 	}
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, &hdr)
@@ -64,11 +63,11 @@ func reply(iface net.ProtocolInterface, targetProtocolAddress []byte, targetHard
 func request(iface net.ProtocolInterface, targetProtocolAddress []byte) error {
 	dev := iface.Device()
 	hdr := header{
-		HardwareType: dev.Type(),
-		ProtocolType: iface.Type(),
+		HardwareType:          dev.Type(),
+		ProtocolType:          iface.Type(),
 		HardwareAddressLength: dev.Address().Len(),
 		ProtocolAddressLength: iface.Address().Len(),
-		OperationCode: operationRequest,
+		OperationCode:         operationRequest,
 	}
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, &hdr)
@@ -95,4 +94,4 @@ func Resolve(iface net.ProtocolInterface, target []byte, data []byte) ([]byte, e
 	repo.mutex.RUnlock()
 	// 登録済みなら対応するMACアドレスを返す
 	return entry.hardwareAddress, nil
-} 
+}

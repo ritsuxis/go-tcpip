@@ -78,4 +78,4 @@ func (tbl *arpTable) length() int {
 	tbl.mutex.RLock()
 	defer tbl.mutex.RUnlock()
 	return len(tbl.storage)
-} 
+}

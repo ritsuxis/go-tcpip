@@ -23,8 +23,8 @@ import (
 */
 
 type header struct {
-	HardwareType net.HardwareType
-	ProtocolType net.EthernetType
+	HardwareType          net.HardwareType
+	ProtocolType          net.EthernetType
 	HardwareAddressLength uint8
 	ProtocolAddressLength uint8
 	OperationCode         uint16
@@ -40,7 +40,7 @@ type message struct {
 
 func parse(data []byte) (*message, error) {
 	hdr := header{}
-	if len(data) < int(unsafe.Sizeof(hdr)){
+	if len(data) < int(unsafe.Sizeof(hdr)) {
 		return nil, fmt.Errorf("message is too short")
 	}
 	// headerを読む
@@ -50,7 +50,7 @@ func parse(data []byte) (*message, error) {
 	}
 	// 格納用
 	msg := message{
-		header: hdr,
+		header:                hdr,
 		sourceHardwareAddress: make([]byte, hdr.HardwareAddressLength),
 		sourceProtocolAddress: make([]byte, hdr.ProtocolAddressLength),
 		targetHardwareAddress: make([]byte, hdr.HardwareAddressLength),

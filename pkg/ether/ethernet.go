@@ -21,9 +21,9 @@ const (
 )
 
 type Device struct {
-	raw raw.Device
+	raw  raw.Device
 	addr Address
-	mtu int
+	mtu  int
 }
 
 var _ net.LinkDevice = &Device{} // interface check
@@ -34,10 +34,10 @@ func NewDevice(raw raw.Device) (*Device, error) {
 	}
 	addr := Address{}
 	copy(addr[:], raw.Address())
-	return &Device {
-		raw: raw,
+	return &Device{
+		raw:  raw,
 		addr: addr,
-		mtu: maxPayloadSize,
+		mtu:  maxPayloadSize,
 	}, nil
 }
 
@@ -103,7 +103,7 @@ func (d *Device) RxHandler(data []byte, callback net.LinkDeviceCallbackHandler) 
 	// if frame.Src == d.addr {
 	// 	// loopback frame
 	// }
-	
+
 	// 自分宛ならコールバックを呼び出す
 	callback(d, frame.Type, frame.payload, frame.Src, frame.Dst)
 }

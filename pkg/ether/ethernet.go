@@ -11,5 +11,3 @@ const (
 	minFrameSize = headerSize + minPayloadSize + trailerSize
 )
 
-
-

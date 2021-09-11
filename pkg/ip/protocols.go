@@ -9,7 +9,7 @@ import (
 type ProtocolRxHandler func(iface net.ProtocolInterface, data []byte, src, dst net.ProtocolAddress) error
 
 type entry struct {
-	number net.ProtocolNumber
+	number    net.ProtocolNumber
 	rxHandler ProtocolRxHandler
 }
 

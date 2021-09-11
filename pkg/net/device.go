@@ -2,6 +2,8 @@ package net
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"sync"
 )
 
@@ -104,4 +106,20 @@ func (d *Device) Interfaces() []ProtocolInterface {
 	}
 	d.RUnlock() // ロック解除
 	return ret
+}
+
+func (d *Device) Shutdown() {
+	d.LinkDevice.Close()
+	if err := <-d.errors; err != nil {
+		if err != io.EOF {
+			log.Println(err)
+		}
+	}
+	devices.Delete(d.LinkDevice)
+}
+
+func (d *Device) RegisterInterface(iface ProtocolInterface) {
+	d.Lock()
+	d.interfaces = append(d.interfaces, iface)
+	d.Unlock()
 }

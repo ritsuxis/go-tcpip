@@ -43,7 +43,7 @@ func (a *assembler) assemble() []*datagram {
 		}
 		offset := flag | uint16((done>>3)&0x1ffff)
 		var hlen = 20 // optionを指定しないので20で固定する
-		var data = a.data[done : done+slen] 
+		var data = a.data[done : done+slen]
 		datagram := &datagram{
 			header: header{
 				VHL:      uint8((4 << 4) | (hlen >> 2)),

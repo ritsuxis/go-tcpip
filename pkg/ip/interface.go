@@ -10,14 +10,14 @@ import (
 )
 
 type Interface struct {
-	unicast Address
-	netmask Address
+	unicast   Address
+	netmask   Address
 	broadcast Address
-	gateway Address
-	device *net.Device
+	gateway   Address
+	device    *net.Device
 }
 
-func newInterface(dev *net.Device, unicast, netmask Address) (*Interface, error){
+func newInterface(dev *net.Device, unicast, netmask Address) (*Interface, error) {
 	return &Interface{
 		unicast: unicast,
 		netmask: netmask,
@@ -39,16 +39,16 @@ func CreateInterface(dev *net.Device, unicast, netmask, gateway string) (*Interf
 	}
 	mask := ParseAddress(netmask)
 	if mask == InvalidAddress { // netmaskが全部0はありえない(全部1はあり得る)
-		return nil, fmt.Errorf("invalid address: %s", netmask) 
+		return nil, fmt.Errorf("invalid address: %s", netmask)
 	}
 	gw := EmptyAddress
 	if gateway != "" {
 		gw = ParseAddress(gateway)
 		if gw == InvalidAddress {
-			return nil, fmt.Errorf("invalid address: %s", gateway) 
+			return nil, fmt.Errorf("invalid address: %s", gateway)
 		}
 	}
-	net := Address {// network address
+	net := Address{ // network address
 		addr[0] & mask[0],
 		addr[1] & mask[1],
 		addr[2] & mask[2],

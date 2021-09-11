@@ -12,7 +12,7 @@ import (
 const IPVersion4 = 4
 
 type header struct {
-	VHL      uint8  // version and header length
+	VHL      uint8 // version and header length
 	TOS      uint8
 	Len      uint16
 	Id       uint16

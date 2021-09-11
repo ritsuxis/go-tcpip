@@ -19,6 +19,10 @@ func init() {
 	net.RegisterProtocol(net.EthernetTypeARP, rxHandler)
 }
 
+func Init() {
+	// do nothing
+}
+
 func rxHandler(dev *net.Device, data []byte, src, dst net.HardwareAddress) error {
 	msg, err := parse(data)
 	if err != nil {
@@ -80,8 +84,8 @@ func request(iface net.ProtocolInterface, targetProtocolAddress []byte) error {
 	return dev.Tx(net.EthernetTypeARP, buf.Bytes(), dev.BroadcastAddress().Bytes())
 }
 
-func Resolve(iface net.ProtocolInterface, target []byte, data []byte) ([]byte, error) {
-	repo.mutex.Lock()
+func Resolve(iface net.ProtocolInterface, target []byte, data []byte) ([]byte, error) { // dataを渡す必要があるのか
+	repo.mutex.RLock()
 	entry := repo.lookupUnlocked(target)
 	// tableにtargetが登録されていなかったら、requestを飛ばす
 	if entry == nil {

@@ -3,7 +3,7 @@ package tuntap
 import (
 	"io"
 
-	ethernet "github.com/ritsuxis/go-tcpip/pkg/ether"
+	"github.com/ritsuxis/go-tcpip/pkg/ether"
 )
 
 type Tap struct {

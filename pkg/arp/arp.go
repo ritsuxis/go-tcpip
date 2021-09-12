@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
 
 	"github.com/ritsuxis/go-tcpip/pkg/net"
 )
@@ -30,9 +31,12 @@ func rxHandler(dev *net.Device, data []byte, src, dst net.HardwareAddress) error
 	}
 	marge := repo.update(msg.sourceProtocolAddress, msg.sourceHardwareAddress)
 	for _, iface := range dev.Interfaces() {
+		println(iface.Address().Bytes())
+		println(msg.targetHardwareAddress)
 		if bytes.Equal(msg.targetHardwareAddress, iface.Address().Bytes()) {
 			if !marge {
 				repo.insert(iface, msg.sourceProtocolAddress, msg.sourceHardwareAddress)
+				log.Panicln("insert!")
 			}
 			if msg.OperationCode == operationRequest {
 				if err = reply(iface, msg.sourceHardwareAddress, msg.sourceHardwareAddress); err != nil {

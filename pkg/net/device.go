@@ -28,7 +28,7 @@ type LinkDevice interface {
 type Device struct {
 	LinkDevice
 	errors       chan error
-	interfaces   []ProtocolInterface
+	ifaces   []ProtocolInterface
 	sync.RWMutex // 排他制御
 }
 
@@ -51,6 +51,7 @@ func RegisterDevice(link LinkDevice) (*Device, error) {
 		for {
 			n, err := dev.Read(buf)
 			if n > 0 {
+				log.Println("packet catch")
 				dev.RxHandler(buf[:n], rxHander)
 			}
 			if err != nil {
@@ -85,7 +86,9 @@ func rxHander(link LinkDevice, protocol EthernetType, payload []byte, src, dst H
 				src:  src,
 				dst:  dst,
 			}
-			return false
+			
+			log.Printf("\n<<<<<<<<<<<<<%s<<<<<<<<<<<<<\ndev: %s\nsrc: %s\ndst: %s\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<", Type, dev.(*Device).LinkDevice.Name(), src, dst)
+			return false // break range loop
 		}
 		return true
 	})
@@ -103,8 +106,8 @@ func Devices() []*Device {
 // 登録されているinterfaceを返す
 func (d *Device) Interfaces() []ProtocolInterface {
 	d.RLock() // Read onlyにロック
-	ret := make([]ProtocolInterface, len(d.interfaces))
-	for i, iface := range d.interfaces {
+	ret := make([]ProtocolInterface, len(d.ifaces))
+	for i, iface := range d.ifaces {
 		ret[i] = iface
 	}
 	d.RUnlock() // ロック解除
@@ -123,6 +126,6 @@ func (d *Device) Shutdown() {
 
 func (d *Device) RegisterInterface(iface ProtocolInterface) {
 	d.Lock()
-	d.interfaces = append(d.interfaces, iface)
+	d.ifaces = append(d.ifaces, iface)
 	d.Unlock()
 }

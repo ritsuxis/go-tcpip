@@ -89,21 +89,24 @@ func (d *Device) RxHandler(data []byte, callback net.LinkDeviceCallbackHandler) 
 		return
 	}
 
+	log.Printf("frame Dst: %s, my Address: %s", frame.Dst, d.addr)
 	// 受信したデータが自分宛(デバイス宛て)かどうか
 	if frame.Dst != d.addr {
 		if !frame.Dst.isGroupAddress() {
-			// other host frame
+			log.Println("This packet is other host frame")
 			return
 		}
 		if frame.Dst != BroadcastAddress {
 			// multicast frame: unsupported
+			log.Println("This packet is multicast frame")
 			return
 		}
 	}
 	// if frame.Src == d.addr {
 	// 	// loopback frame
 	// }
-
+	
+	log.Printf("It's mine!")
 	// 自分宛ならコールバックを呼び出す
 	callback(d, frame.Type, frame.payload, frame.Src, frame.Dst)
 }

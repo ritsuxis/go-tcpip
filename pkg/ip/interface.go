@@ -109,6 +109,7 @@ func (iface *Interface) xmit(datagram *datagram, nexthop net.ProtocolAddress) er
 	var hardwareAddress []byte
 	// arpが必要か見る
 	if iface.Device().NeedARP() {
+		log.Println("Need arp")
 		if nexthop != nil {
 			var err error
 			// 目的のnexthopのためのarp解決要求を出す

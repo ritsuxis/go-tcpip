@@ -2,6 +2,7 @@ package ip
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/ritsuxis/go-tcpip/pkg/net"
 )
@@ -25,5 +26,6 @@ func RegisterProtocol(number net.ProtocolNumber, rxHandler ProtocolRxHandler) er
 		rxHandler: rxHandler,
 	}
 	protocols[number] = entry
+	log.Printf("Protocol registered: Number: %s", entry.number)
 	return nil
 }

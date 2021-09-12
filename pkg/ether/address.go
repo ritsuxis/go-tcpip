@@ -17,7 +17,6 @@ var (
 	BroadcastAddress = Address{0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 )
 
-// 後で見る
 // 多分一々登録しなくても済むようにしてる？
 func NewAddress(b []byte) Address {
 	var ret Address

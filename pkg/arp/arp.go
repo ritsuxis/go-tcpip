@@ -31,12 +31,11 @@ func rxHandler(dev *net.Device, data []byte, src, dst net.HardwareAddress) error
 	}
 	marge := repo.update(msg.sourceProtocolAddress, msg.sourceHardwareAddress)
 	for _, iface := range dev.Interfaces() {
-		println(iface.Address().Bytes())
-		println(msg.targetHardwareAddress)
-		if bytes.Equal(msg.targetHardwareAddress, iface.Address().Bytes()) {
+		// bytes.Equalだと同じ長さかどうかも確認しているので、Compareにしている
+		if bytes.Compare(msg.targetProtocolAddress, iface.Address().Bytes()) == 0 {
 			if !marge {
 				repo.insert(iface, msg.sourceProtocolAddress, msg.sourceHardwareAddress)
-				log.Panicln("insert!")
+				log.Printf("Insert to arp table")
 			}
 			if msg.OperationCode == operationRequest {
 				if err = reply(iface, msg.sourceHardwareAddress, msg.sourceHardwareAddress); err != nil {

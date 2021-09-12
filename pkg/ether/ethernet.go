@@ -98,7 +98,7 @@ func (d *Device) RxHandler(data []byte, callback net.LinkDeviceCallbackHandler) 
 		}
 		if frame.Dst != BroadcastAddress {
 			// multicast frame: unsupported
-			log.Println("This packet is multicast frame")
+			// log.Println("This packet is multicast frame")
 			return
 		}
 	}

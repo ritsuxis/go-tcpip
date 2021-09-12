@@ -88,7 +88,7 @@ func main() {
 		defer t.Stop()
 		peer := ip.ParseAddress("192.0.2.1")
 		data := []byte("1234567890")
-		// for {
+		for {
 			select {
 			case <-ctx.Done():
 				return
@@ -96,7 +96,7 @@ func main() {
 				fmt.Printf("send ICMP Echo to %s\n", peer)
 				icmp.EchoRequest(data, peer)
 			}
-		// }
+		}
 	}()
 	select {
 	case s := <-sig:

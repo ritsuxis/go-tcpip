@@ -5,9 +5,9 @@ import (
 	"io"
 	"log"
 	"sync"
+
 )
 
-// 後で見る
 type LinkDeviceCallbackHandler func(link LinkDevice, protocol EthernetType, payload []byte, src, dst HardwareAddress)
 
 type LinkDevice interface {
@@ -22,6 +22,7 @@ type LinkDevice interface {
 	Read(data []byte) (int, error)
 	RxHandler(frame []byte, callback LinkDeviceCallbackHandler)
 	Tx(proto EthernetType, data []byte, dst []byte) error
+	// Buffer() *ethernet.Frame
 }
 
 type Device struct {
@@ -62,6 +63,7 @@ func RegisterDevice(link LinkDevice) (*Device, error) {
 
 	// 登録
 	devices.Store(link, dev)
+	log.Printf("Register Device: Name: %s, HWAddress: %s", link.Name(), link.Address())
 	return dev, nil
 }
 
@@ -76,6 +78,7 @@ func rxHander(link LinkDevice, protocol EthernetType, payload []byte, src, dst H
 			if !ok {
 				panic("device not found")
 			}
+			// プロトコルの受信キューへ格納
 			entry.rxQueue <- &packet{
 				dev:  dev.(*Device),
 				data: payload,

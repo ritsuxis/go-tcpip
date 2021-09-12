@@ -1,10 +1,15 @@
 package tuntap
 
-import "io"
+import (
+	"io"
+
+	ethernet "github.com/ritsuxis/go-tcpip/pkg/ether"
+)
 
 type Tap struct {
 	io.ReadWriteCloser // Reader, Writer, Closerをinterfaceとしてもっている
 	name               string
+	buffer             chan *ethernet.Frame
 }
 
 const macAddressLength = 6
@@ -27,4 +32,8 @@ func (t Tap) Address() []byte {
 
 func (t Tap) Name() string {
 	return t.name
+}
+
+func (t Tap) Buffer() chan *ethernet.Frame {
+	return t.buffer
 }

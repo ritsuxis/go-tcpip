@@ -39,7 +39,7 @@ func SIOCGIFINDEX(name string) (int32, error) {
 }
 
 // デバイスのアクティブフラグワードを取得する
-func SIOGSIFFLAGS(name string) (uint16, error) {
+func SIOCGIFFLAGS(name string) (uint16, error) {
 	soc, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, 0)
 	if err != nil {
 		return 0, err
@@ -50,7 +50,6 @@ func SIOGSIFFLAGS(name string) (uint16, error) {
 		flags uint16
 		_pad  [22]byte
 	}{}
-
 	copy(ifreq.name[:syscall.IFNAMSIZ-1], name)
 	if _, _, errno := syscall.Syscall(syscall.SYS_IOCTL, uintptr(soc), syscall.SIOCGIFFLAGS, uintptr(unsafe.Pointer(&ifreq))); errno != 0 {
 		return 0, errno

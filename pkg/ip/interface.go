@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
 
 	"github.com/ritsuxis/go-tcpip/pkg/arp"
 	"github.com/ritsuxis/go-tcpip/pkg/net"
@@ -77,8 +78,10 @@ func GetInterface(addr net.ProtocolAddress) net.ProtocolInterface {
 func GetInterfaceByRemoteAddress(remote net.ProtocolAddress) net.ProtocolInterface {
 	route := repo.lookup(nil, remote.(Address))
 	if route == nil {
+		log.Printf("address not found: %s", remote)
 		return nil
 	}
+	log.Printf("address found: %s", remote)
 	return route.iface
 }
 

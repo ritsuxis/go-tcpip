@@ -33,6 +33,7 @@ func (tbl *routeTable) add(iface *Interface, network, netmask, nexthop Address) 
 	tbl.mutex.Lock()
 	tbl.storage = append(tbl.storage, &routeEntry{network, netmask, nexthop, iface})
 	tbl.mutex.Unlock()
+	log.Printf("network=%s, netmask=%s, nexthop=%s, iface=%s\n", network, netmask, nexthop, iface.Device().Name())
 }
 
 func (tbl *routeTable) del(iface *Interface) {

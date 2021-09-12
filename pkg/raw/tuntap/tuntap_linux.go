@@ -26,7 +26,7 @@ func openTap(name string) (string, *os.File, error) {
 	if err != nil {
 		return "", nil, err
 	}
-	flags, err := ioctl.SIOGSIFFLAGS(name)
+	flags, err := ioctl.SIOCGIFFLAGS(name)
 	if err != nil {
 		return "", nil, err
 	}

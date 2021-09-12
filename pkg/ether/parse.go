@@ -15,13 +15,13 @@ type header struct {
 }
 
 // Ethernet frame
-type frame struct {
+type Frame struct {
 	header
 	payload []byte
 }
 
-func parse(data []byte) (*frame, error) {
-	frame := frame{}
+func parse(data []byte) (*Frame, error) {
+	frame := Frame{}
 	buf := bytes.NewBuffer(data)
 	// 来たデータはネットワークの標準でビッグエンディアンになっている
 	// bufに格納したdataをheaderの分だけ読みだして構造体に埋める

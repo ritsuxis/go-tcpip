@@ -121,5 +121,6 @@ func (d *Device) Tx(Type net.EthernetType, data []byte, dst []byte) error {
 		binary.Write(frame, binary.BigEndian, bytes.Repeat([]byte{byte(0)}, pad))
 	}
 	_, err := d.raw.Write(frame.Bytes())
+	log.Printf("data send: Dst: %s, Src: %s, Type: %s", hdr.Dst, hdr.Src, hdr.Type)
 	return err
 }

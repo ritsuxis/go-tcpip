@@ -58,6 +58,7 @@ func (conn *Conn) WriteTo(data []byte, peer *Address) error {
 		header: hdr,
 		data:   data,
 	}
+	datagram.dump()
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, &hdr)
 	binary.Write(buf, binary.BigEndian, data)

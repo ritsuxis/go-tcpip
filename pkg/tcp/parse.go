@@ -54,7 +54,6 @@ type packet struct {
 
 type OffsetCtrFlag uint16
 
-type ControlFlag   uint8
 
 func (p packet) dump() {
 	log.Printf("       src port: %d\n", p.SourcePort)

@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ritsuxis/go-tcpip/pkg/arp"
 	"github.com/ritsuxis/go-tcpip/pkg/ether"
 	"github.com/ritsuxis/go-tcpip/pkg/icmp"
 	"github.com/ritsuxis/go-tcpip/pkg/ip"
@@ -22,6 +23,8 @@ var sig chan os.Signal
 
 func init() {
 	icmp.Init()
+	arp.Init()
+	udp.Init()
 }
 
 func setup() error {
@@ -47,7 +50,7 @@ func setup() error {
 	if err != nil {
 		return err
 	}
-	iface, err := ip.CreateInterface(dev, "192.0.0.100", "255.255.255.0", "")
+	iface, err := ip.CreateInterface(dev, "192.0.2.3", "255.255.255.0", "")
 	if err != nil {
 		return err
 	}
@@ -61,7 +64,7 @@ func main() {
 		panic(err)
 	}
 	peer := &udp.Address{
-		Addr: ip.ParseAddress("192.0.0.1"),
+		Addr: ip.ParseAddress("192.0.2.1"),
 		Port: 10381,
 	}
 	conn, err := udp.Dial(nil, peer)
@@ -77,7 +80,6 @@ func main() {
 		t := time.NewTicker(1 * time.Second)
 		defer t.Stop()
 		data := []byte("hoge\n")
-		buf := make([]byte, 65536)
 		for {
 			select {
 			case <-ctx.Done():
@@ -85,10 +87,6 @@ func main() {
 			case <-t.C:
 				fmt.Printf("%d bytes data send to %s\n", len(data), peer)
 				conn.Write(data)
-			}
-			_, peer, _ := conn.ReadFrom(buf)
-			if peer != nil {
-				println(peer)
 			}
 		}
 	}()

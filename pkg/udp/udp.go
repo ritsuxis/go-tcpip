@@ -12,6 +12,10 @@ func init() {
 	ip.RegisterProtocol(net.ProtocolNumberUDP, rxHandler)
 }
 
+func Init(){
+	// do nothing
+}
+
 func rxHandler(iface net.ProtocolInterface, data []byte, src, dst net.ProtocolAddress) error {
 	datagram, err := parse(data, src, dst)
 	if err != nil {
@@ -32,6 +36,7 @@ func rxHandler(iface net.ProtocolInterface, data []byte, src, dst net.ProtocolAd
 	}
 	select {
 	case entry.rxQueue <- queueEntry:
+		datagram.dump()
 		return nil // success
 	default:
 		return fmt.Errorf("drop")

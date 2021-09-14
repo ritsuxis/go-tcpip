@@ -46,7 +46,7 @@ func setup() error {
 	if err != nil {
 		return err
 	}
-	iface, err := ip.CreateInterface(dev, "172.16.0.100", "255.255.255.0", "")
+	iface, err := ip.CreateInterface(dev, "192.0.2.2", "255.255.255.0", "")
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+
 	// "unsafe"
 
 	"github.com/ritsuxis/go-tcpip/pkg/net"
@@ -41,29 +42,29 @@ type header struct {
 	SequenceNumber  uint32
 	ACKNumber       uint32
 	OffsetCtrFlag
-	WindowSize      uint16
-	Checksum        uint16
-	Urgent          uint16
+	WindowSize uint16
+	Checksum   uint16
+	Urgent     uint16 // 緊急ポインタに関する実装はしない
 }
 
 type packet struct {
 	header
-	Option          Option
-	data []byte
+	Option Options
+	data   []byte
 }
 
 type OffsetCtrFlag uint16
 
-
 func (p packet) dump() {
-	log.Printf("       src port: %d\n", p.SourcePort)
-	log.Printf("       dst port: %d\n", p.DestinationPort)
-	log.Printf("     seq number: %d bytes\n", p.SequenceNumber)
-	log.Printf("     ack number: %d\n", p.ACKNumber)
-	log.Printf("offset and flag: %d\n", p.OffsetCtrFlag)
-	log.Printf("    window size: %d\n", p.WindowSize)
-	log.Printf("       checksum: 0x%04x\n", p.Checksum)
-	log.Printf("  urgent number: %d\n", p.Urgent)
+	log.Printf("     src port: %d\n", p.SourcePort)
+	log.Printf("     dst port: %d\n", p.DestinationPort)
+	log.Printf("   seq number: %d bytes\n", p.SequenceNumber)
+	log.Printf("   ack number: %d\n", p.ACKNumber)
+	log.Printf("       offset: %d\n", p.OffsetCtrFlag.Offset())
+	log.Printf("         flag: %s\n", p.OffsetCtrFlag.ControlFlag().String())
+	log.Printf("  window size: %d\n", p.WindowSize)
+	log.Printf("     checksum: 0x%04x\n", p.Checksum)
+	log.Printf("urgent number: %d\n", p.Urgent)
 	fmt.Println(hex.Dump(p.data))
 }
 
@@ -107,9 +108,9 @@ func makeOffsetCtrlFlag(offset uint8, flag ControlFlag) OffsetCtrFlag {
 }
 
 // TCP header Length
-func (ocf OffsetCtrFlag) Offset() int{
+func (ocf OffsetCtrFlag) Offset() int {
 	ocf8 := uint(ocf >> 8)
-	return  4 * int(ocf8 >> 4)
+	return 4 * int(ocf8>>4)
 }
 
 func (ocf OffsetCtrFlag) ControlFlag() ControlFlag {

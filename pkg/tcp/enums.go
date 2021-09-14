@@ -7,4 +7,12 @@ const (
 	PSH ControlFlag = 0x08 // 001000
 	ACK ControlFlag = 0x10 // 010000
 	URG ControlFlag = 0x20 // 100000
+
+	EOL  OptionKind = 0
+	NOP  OptionKind = 1
+	MSS  OptionKind = 2
+	WS   OptionKind = 3
+	SP   OptionKind = 4
+	SACK OptionKind = 5
+	TS   OptionKind = 8
 )

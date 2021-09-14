@@ -100,7 +100,7 @@ func (sp SACKPermitted) Data() []byte {
 	return nil
 }
 
-func (sp SACKPermitted) Byte() []byte {
+func (sp SACKPermitted) Format() []byte {
 	return []byte{byte(SP), byte(sp.Length())}
 }
 
@@ -118,7 +118,7 @@ func (sack SelectiveACK) Data() []byte {
 	return sack
 }
 
-func (sack SelectiveACK) Byte() []byte {
+func (sack SelectiveACK) Format() []byte {
 	return append([]byte{byte(SACK), byte(sack.Length())}, sack.Data()...)
 }
 
@@ -136,6 +136,6 @@ func (ts TimeStamp) Data() []byte {
 	return ts
 }
 
-func (ts TimeStamp) Byte() []byte {
+func (ts TimeStamp) Format() []byte {
 	return append([]byte{byte(8), byte(10)}, ts.Data()...)
 }

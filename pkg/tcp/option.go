@@ -139,3 +139,5 @@ func (ts TimeStamp) Data() []byte {
 func (ts TimeStamp) Format() []byte {
 	return append([]byte{byte(8), byte(10)}, ts.Data()...)
 }
+
+// TODO: generate timestamp

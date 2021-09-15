@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
+	// "unsafe"
 
 	// "unsafe"
 
@@ -49,7 +50,7 @@ type header struct {
 
 type packet struct {
 	header
-	Option Options
+	option Options
 	data   []byte
 }
 
@@ -80,7 +81,7 @@ func pseudoHeaderSum(src, dst net.ProtocolAddress, n int) uint32 {
 // TODO later
 // func parse(data []byte, src, dst net.ProtocolAddress) (*packet, error) {
 // 	hdr := header{}
-// 	ops := Option{}
+// 	ops := Options{}
 // 	if len(data) < int(unsafe.Sizeof(hdr)) {
 // 		return nil, fmt.Errorf("message is too short")
 // 	}

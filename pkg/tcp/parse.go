@@ -54,6 +54,10 @@ type packet struct {
 
 type OffsetCtrFlag uint16
 
+func (p packet) Dump() {
+	p.dump()
+}
+
 func (p packet) dump() {
 	log.Printf(">>>>>>>>>>TCP>>>>>>>>>>>")
 	log.Printf("     src port: %d\n", p.SourcePort)
@@ -78,16 +82,12 @@ func pseudoHeaderSum(src, dst net.ProtocolAddress, n int) uint32 {
 	return uint32(^net.CheckSum16(pseudo.Bytes(), pseudo.Len(), 0))
 }
 
-func parse(data []byte, src, dst net.ProtocolAddress) (*packet, error) {
+func Parse(data []byte, src, dst net.ProtocolAddress) (*packet, error) {
 	hdr := header{}
 	if len(data) < int(unsafe.Sizeof(hdr)) {
-		return nil, fmt.Errorf("message is too short")
+		return nil, fmt.Errorf("message is too short: %d", len(data))
 	}
 	buf := bytes.NewBuffer(data)
-	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
-		return nil, err
-	}
-
 	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
 		return nil, err
 	}

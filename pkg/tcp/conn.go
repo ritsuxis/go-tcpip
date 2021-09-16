@@ -10,11 +10,6 @@ import (
 	"github.com/ritsuxis/go-tcpip/pkg/net"
 )
 
-// "bytes"
-// "encoding/binary"
-
-// "github.com/ritsuxis/go-tcpip/pkg/net"
-
 type Conn struct {
 	cb   *cbEntry
 	peer *Address
@@ -49,7 +44,7 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 	}
 
 	buf := new(bytes.Buffer)
-	
+
 	// option handle
 	var opLength = 0 
 	if ops != nil { // optionが指定されていた時
@@ -84,7 +79,5 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 	packet.Checksum = net.CheckSum16(b, len(b), pseudoHeaderSum(iface.Address(), peer.Addr, len(b)))
 	binary.BigEndian.PutUint16(b[16:18], packet.Checksum)
 	packet.dump()
-	fmt.Println(b)
-
 	return iface.Tx(net.ProtocolNumberTCP, b, peer.Addr)
 }

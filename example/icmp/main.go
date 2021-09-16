@@ -48,7 +48,7 @@ func setup() (*net.Device, error) {
 	if err != nil {
 		return nil, err
 	}
-	iface, err := ip.CreateInterface(dev, "192.0.2.2", "255.255.255.0", "")
+	iface, err := ip.CreateInterface(dev, "192.0.2.2", "255.255.255.0", "192.0.2.1")
 	if err != nil {
 		return nil, err
 	}
@@ -86,15 +86,21 @@ func main() {
 		defer wg.Done()
 		t := time.NewTicker(1 * time.Second)
 		defer t.Stop()
-		peer := ip.ParseAddress("192.0.2.1")
+		peer := ip.ParseAddress("172.29.18.100")
 		data := []byte("1234567890")
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-t.C:
-				fmt.Printf("send ICMP Echo to %s\n", peer)
-				icmp.EchoRequest(data, peer)
+				if ip.GetInterfaceByRemoteAddress(peer) == nil {
+					peer := ip.ParseAddress("192.0.2.1")
+					fmt.Printf("send ICMP Echo to %s\n", peer)
+					icmp.EchoRequest(data, peer)
+				} else {
+					fmt.Printf("send ICMP Echo to %s\n", peer)
+					icmp.EchoRequest(data, peer)
+				}
 			}
 		}
 	}()

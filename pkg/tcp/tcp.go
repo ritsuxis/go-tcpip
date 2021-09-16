@@ -23,6 +23,7 @@ func rxHandler(iface net.ProtocolInterface, data []byte, src, dst net.ProtocolAd
 	return nil
 }
 
+// Used for debugging purposes only
 func Build(src, dst uint16, seq, ack uint32, flag ControlFlag, ws, urgent uint16, data []byte, ops Options) []byte {
 	hdr := header {
 		SourcePort: src,

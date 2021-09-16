@@ -86,7 +86,8 @@ func main() {
 				return
 			case <-t.C:
 				fmt.Printf("%d bytes data send to %s\n", len(data), peer)
-				conn.Write(data, tcp.ControlFlag(tcp.ACK), nil)
+				conn.Write(data, tcp.ControlFlag(tcp.SYN), nil)
+				// conn.Write(data, tcp.ControlFlag(tcp.ACK), nil)
 			}
 		}
 	}()

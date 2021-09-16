@@ -64,7 +64,7 @@ func main() {
 		panic(err)
 	}
 	peer := &udp.Address{
-		Addr: ip.ParseAddress("192.0.2.1"),
+		Addr: ip.ParseAddress("192.0.2.2"),
 		Port: 10381,
 	}
 	conn, err := udp.Dial(nil, peer)

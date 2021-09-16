@@ -80,7 +80,8 @@ func request(iface net.ProtocolInterface, targetProtocolAddress []byte) error {
 	binary.Write(buf, binary.BigEndian, &hdr)
 	binary.Write(buf, binary.BigEndian, dev.Address().Bytes())
 	binary.Write(buf, binary.BigEndian, iface.Address().Bytes())
-	binary.Write(buf, binary.BigEndian, bytes.Repeat([]byte{byte(0)}, int(hdr.HardwareAddressLength))) // requestの際は相手のMACアドレスは知らないので0で埋めておく
+	// requestの際は相手のMACアドレスは知らないので0で埋めておく
+	binary.Write(buf, binary.BigEndian, bytes.Repeat([]byte{byte(0)}, int(hdr.HardwareAddressLength)))
 	binary.Write(buf, binary.BigEndian, targetProtocolAddress)
 
 	// 誰に送ればいいかもわからない(MACアドレス知らないから)ので全員に流す

@@ -6,9 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"log"
-	// "unsafe"
-
-	// "unsafe"
+	"unsafe"
 
 	"github.com/ritsuxis/go-tcpip/pkg/net"
 )
@@ -57,6 +55,7 @@ type packet struct {
 type OffsetCtrFlag uint16
 
 func (p packet) dump() {
+	log.Printf(">>>>>>>>>>TCP>>>>>>>>>>>")
 	log.Printf("     src port: %d\n", p.SourcePort)
 	log.Printf("     dst port: %d\n", p.DestinationPort)
 	log.Printf("   seq number: %d bytes\n", p.SequenceNumber)
@@ -67,6 +66,7 @@ func (p packet) dump() {
 	log.Printf("     checksum: 0x%04x\n", p.Checksum)
 	log.Printf("urgent number: %d\n", p.Urgent)
 	fmt.Println(hex.Dump(p.data))
+	log.Printf(">>>>>>>>>>>>>>>>>>>>>>>>")
 }
 
 func pseudoHeaderSum(src, dst net.ProtocolAddress, n int) uint32 {
@@ -78,31 +78,44 @@ func pseudoHeaderSum(src, dst net.ProtocolAddress, n int) uint32 {
 	return uint32(^net.CheckSum16(pseudo.Bytes(), pseudo.Len(), 0))
 }
 
-// TODO later
-// func parse(data []byte, src, dst net.ProtocolAddress) (*packet, error) {
-// 	hdr := header{}
-// 	ops := Options{}
-// 	if len(data) < int(unsafe.Sizeof(hdr)) {
-// 		return nil, fmt.Errorf("message is too short")
-// 	}
-// 	buf := bytes.NewBuffer(data)
-// 	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
-// 		return nil, err
-// 	}
+func parse(data []byte, src, dst net.ProtocolAddress) (*packet, error) {
+	hdr := header{}
+	if len(data) < int(unsafe.Sizeof(hdr)) {
+		return nil, fmt.Errorf("message is too short")
+	}
+	buf := bytes.NewBuffer(data)
+	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
+		return nil, err
+	}
 
-// 	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
-// 		return nil, err
-// 	}
+	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
+		return nil, err
+	}
 
-// 	sum := net.CheckSum16(data, len(data), pseudoHeaderSum(src, dst, len(data)))
-// 	if sum != 0 {
-// 		return nil, fmt.Errorf("tcp checksum failure: 0x%04x", sum)
-// 	}
-// 	return &packet{
-// 		header: hdr,
-// 		data:   buf.Bytes(),
-// 	}, nil
-// }
+	sum := net.CheckSum16(data, len(data), pseudoHeaderSum(src, dst, len(data)))
+	if sum != 0 {
+		return nil, fmt.Errorf("tcp checksum failure: 0x%04x", sum)
+	}
+
+	// parseする際にoffsetsizeを読めばどこからがdataがわかる
+	// headerはoption抜きだと20byteのため、その差分がheader
+	if opsize := hdr.OffsetCtrFlag.Offset() - 20; opsize > 0 {
+		ops := make(Options, opsize)
+		if err := binary.Read(buf, binary.BigEndian, &ops); err != nil {
+			return nil, err
+		}
+		return &packet{
+			header: hdr,
+			option: ops,
+			data:   buf.Bytes(),
+		}, nil
+	} else {
+		return &packet{
+			header: hdr,
+			data:   buf.Bytes(),
+		}, nil
+	}
+}
 
 func makeOffsetCtrlFlag(offset uint8, flag ControlFlag) OffsetCtrFlag {
 	return OffsetCtrFlag(uint16(offset/4)<<12 | uint16(flag)) // offsetは32bit word

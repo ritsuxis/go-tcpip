@@ -58,7 +58,6 @@ func (conn *Conn) WriteTo(data []byte, peer *Address) error {
 		header: hdr,
 		data:   data,
 	}
-	datagram.dump()
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, &hdr)
 	binary.Write(buf, binary.BigEndian, data)
@@ -66,5 +65,6 @@ func (conn *Conn) WriteTo(data []byte, peer *Address) error {
 	b := buf.Bytes()
 	datagram.Checksum = net.CheckSum16(b, len(b), pseudoHeaderSum(iface.Address(), peer.Addr, len(b)))
 	binary.BigEndian.PutUint16(b[6:8], datagram.Checksum)
+	datagram.dump()
 	return iface.Tx(net.ProtocolNumberUDP, b, peer.Addr)
 }

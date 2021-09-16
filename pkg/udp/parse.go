@@ -24,11 +24,13 @@ type datagram struct {
 }
 
 func (d datagram) dump() {
+	log.Printf(">>>>>>>>>>UDP>>>>>>>>>>>")
 	log.Printf("  src port: %d\n", d.SourcePort)
 	log.Printf("  dst port: %d\n", d.DestinationPort)
 	log.Printf("    length: %d bytes\n", d.Length)
 	log.Printf("  checksum: 0x%04x\n", d.Checksum)
 	fmt.Println(hex.Dump(d.data))
+	log.Printf(">>>>>>>>>>>>>>>>>>>>>>>>")
 }
 
 func pseudoHeaderSum(src, dst net.ProtocolAddress, n int) uint32 {

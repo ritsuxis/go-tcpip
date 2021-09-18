@@ -3,6 +3,8 @@ package tcp
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
+	"log"
 	"unsafe"
 
 	"github.com/ritsuxis/go-tcpip/pkg/ip"
@@ -19,8 +21,38 @@ func Init() {
 }
 
 func rxHandler(iface net.ProtocolInterface, data []byte, src, dst net.ProtocolAddress) error {
-	// Proto
-	return nil
+	packet, flag, err := Parse(data, src, dst)
+	if err != nil {
+		return err
+	}
+	addr := &Address{
+		Addr: iface.Address(),
+		Port: packet.DestinationPort,
+	}
+	entry := repo.lookup(addr)
+	if entry == nil {
+		return fmt.Errorf("port unreachable")
+	}
+
+	entry.State = entry.State.TransitionRcv(flag)
+	log.Printf("Rcv: Now TCP state is %s", entry.State)
+	entry.Number <- SeqAck{
+		Seq: packet.SequenceNumber,
+		Ack: packet.ACKNumber,
+	}
+
+	queueEntry := &queueEntry{
+		addr: src,
+		port: packet.SourcePort,
+		data: packet.data,
+	}
+	select {
+	case entry.rxQueue <- queueEntry:
+		packet.dump()
+		return nil // success
+	default:
+		return fmt.Errorf("drop")
+	}
 }
 
 // Used for debugging purposes only

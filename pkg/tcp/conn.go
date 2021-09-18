@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"log"
 	"unsafe"
 
 	"github.com/ritsuxis/go-tcpip/pkg/ip"
@@ -11,7 +12,7 @@ import (
 )
 
 type Conn struct {
-	cb   *cbEntry
+	Cb   *cbEntry
 	peer *Address
 }
 
@@ -35,13 +36,44 @@ func (conn *Conn) Write(data []byte, flag ControlFlag, ops Options) error {
 
 func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Options) error {
 	hdr := header {
-		SourcePort: conn.cb.Port,
+		SourcePort: conn.Cb.Port,
 		DestinationPort: peer.Port,
-		SequenceNumber: 0, // TODO: ctrl seq num
-		ACKNumber: 25, // TODO: ctrl ack num
-		WindowSize: 1000, // TODO: 受信側のサイズに合わせて変える
+		// SequenceNumber: conn.cb.seq, // TODO: ctrl seq num
+		// ACKNumber: conn.cb.ack + uint32(unsafe.Sizeof(data)), // TODO: ctrl ack num
+		WindowSize: 0, // TODO: 受信側のサイズに合わせて変える
 		Urgent: 0,
 	}
+
+	// tcp state
+	entry := repo.lookup(conn.Cb.Address)
+	if entry == nil {
+		return fmt.Errorf("port not found")
+	}
+
+	if conn.Cb.State == Close {
+		hdr.SequenceNumber = 0
+		hdr.ACKNumber = 0
+	} else if conn.Cb.State == SynSent {
+		sa := <-entry.Number
+		hdr.SequenceNumber = sa.Ack
+		hdr.ACKNumber = sa.Seq + 1
+	} else if conn.Cb.State == Established {
+		sa := <-entry.Number
+		hdr.SequenceNumber = sa.Ack
+		hdr.ACKNumber = sa.Seq + 1
+	} else if conn.Cb.State == FirstSent {
+		sa := <-entry.Number
+		hdr.SequenceNumber = sa.Ack
+		hdr.ACKNumber = sa.Seq + 1
+	} else if conn.Cb.State == Sent {
+		sa := <-entry.Number
+		hdr.SequenceNumber = sa.Ack
+		hdr.ACKNumber = sa.Seq + uint32(unsafe.Sizeof(data))
+	}
+
+	conn.Cb.State = conn.Cb.State.TransitionSnd(flag)
+	log.Printf("Snd: Now TCP state is %s", conn.Cb.State)
+
 
 	buf := new(bytes.Buffer)
 
@@ -74,7 +106,7 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 		data: data,
 	}
 
-	iface := getAppropriateInterface(conn.cb.Addr, peer.Addr)
+	iface := getAppropriateInterface(conn.Cb.Addr, peer.Addr)
 	b := buf.Bytes()
 	packet.Checksum = net.CheckSum16(b, len(b), pseudoHeaderSum(iface.Address(), peer.Addr, len(b)))
 	binary.BigEndian.PutUint16(b[16:18], packet.Checksum)

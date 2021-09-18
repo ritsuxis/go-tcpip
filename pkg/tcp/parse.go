@@ -62,7 +62,7 @@ func (p packet) dump() {
 	log.Printf(">>>>>>>>>>TCP>>>>>>>>>>>")
 	log.Printf("     src port: %d\n", p.SourcePort)
 	log.Printf("     dst port: %d\n", p.DestinationPort)
-	log.Printf("   seq number: %d bytes\n", p.SequenceNumber)
+	log.Printf("   seq number: %d\n", p.SequenceNumber)
 	log.Printf("   ack number: %d\n", p.ACKNumber)
 	log.Printf("       offset: %d\n", p.OffsetCtrFlag.Offset())
 	log.Printf("         flag: %s\n", p.OffsetCtrFlag.ControlFlag().String())
@@ -82,39 +82,48 @@ func pseudoHeaderSum(src, dst net.ProtocolAddress, n int) uint32 {
 	return uint32(^net.CheckSum16(pseudo.Bytes(), pseudo.Len(), 0))
 }
 
-func Parse(data []byte, src, dst net.ProtocolAddress) (*packet, error) {
+func Parse(data []byte, src, dst net.ProtocolAddress) (*packet, ControlFlag, error) {
 	hdr := header{}
 	if len(data) < int(unsafe.Sizeof(hdr)) {
-		return nil, fmt.Errorf("message is too short: %d", len(data))
+		return nil, 0, fmt.Errorf("message is too short: %d", len(data))
 	}
 	buf := bytes.NewBuffer(data)
 	if err := binary.Read(buf, binary.BigEndian, &hdr); err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	sum := net.CheckSum16(data, len(data), pseudoHeaderSum(src, dst, len(data)))
 	if sum != 0 {
-		return nil, fmt.Errorf("tcp checksum failure: 0x%04x", sum)
+		return nil, 0, fmt.Errorf("tcp checksum failure: 0x%04x", sum)
 	}
 
-	// parseする際にoffsetsizeを読めばどこからがdataがわかる
-	// headerはoption抜きだと20byteのため、その差分がheader
-	if opsize := hdr.OffsetCtrFlag.Offset() - 20; opsize > 0 {
-		ops := make(Options, opsize)
-		if err := binary.Read(buf, binary.BigEndian, &ops); err != nil {
-			return nil, err
-		}
-		return &packet{
-			header: hdr,
-			option: ops,
-			data:   buf.Bytes(),
-		}, nil
-	} else {
-		return &packet{
-			header: hdr,
-			data:   buf.Bytes(),
-		}, nil
+	// // parseする際にoffsetsizeを読めばどこからがdataがわかる
+	// // headerはoption抜きだと20byteのため、その差分がheader
+	// if opsize := hdr.OffsetCtrFlag.Offset() - 20; opsize > 0 {
+	// 	log.Printf("Offset size: %d byte", hdr.OffsetCtrFlag.Offset())
+	// 	log.Printf("Option size: %d byte", opsize)
+	// 	ops := make(Options, opsize)
+	// 	if err := binary.Read(buf, binary.BigEndian, &ops); err != nil {
+	// 		return nil, 0, err
+	// 	}
+	// 	return &packet{
+	// 		header: hdr,
+	// 		option: ops,
+	// 		data:   buf.Bytes(),
+	// 	}, hdr.OffsetCtrFlag.ControlFlag() ,nil
+	// } else {
+	// 	return &packet{
+	// 		header: hdr,
+	// 		data:   buf.Bytes(),
+	// 	}, hdr.OffsetCtrFlag.ControlFlag(), nil
+	// }
+	pk := packet{
+		header: hdr,
+		data:   buf.Bytes(),
 	}
+	pk.dump()
+
+	return &pk, hdr.OffsetCtrFlag.ControlFlag(), nil
 }
 
 func makeOffsetCtrlFlag(offset uint8, flag ControlFlag) OffsetCtrFlag {

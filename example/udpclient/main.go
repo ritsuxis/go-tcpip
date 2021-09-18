@@ -50,7 +50,7 @@ func setup() error {
 	if err != nil {
 		return err
 	}
-	iface, err := ip.CreateInterface(dev, "192.0.2.3", "255.255.255.0", "")
+	iface, err := ip.CreateInterface(dev, "192.0.2.2", "255.255.255.0", "")
 	if err != nil {
 		return err
 	}
@@ -64,7 +64,7 @@ func main() {
 		panic(err)
 	}
 	peer := &udp.Address{
-		Addr: ip.ParseAddress("192.0.2.2"),
+		Addr: ip.ParseAddress("192.0.2.1"),
 		Port: 10381,
 	}
 	conn, err := udp.Dial(nil, peer)

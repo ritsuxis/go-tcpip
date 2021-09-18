@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/ritsuxis/go-tcpip/pkg/arp"
-	"github.com/ritsuxis/go-tcpip/pkg/ether"
+	ethernet "github.com/ritsuxis/go-tcpip/pkg/ether"
 	"github.com/ritsuxis/go-tcpip/pkg/icmp"
 	"github.com/ritsuxis/go-tcpip/pkg/ip"
 	"github.com/ritsuxis/go-tcpip/pkg/net"
@@ -67,6 +67,7 @@ func main() {
 		Addr: ip.ParseAddress("192.0.2.1"),
 		Port: 10381,
 	}
+	icmp.EchoRequest(nil, peer.Addr) // dummy
 	conn, err := tcp.Dial(nil, peer)
 	if err != nil {
 		panic(err)
@@ -77,7 +78,7 @@ func main() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		t := time.NewTicker(1 * time.Second)
+		t := time.NewTicker(2 * time.Second)
 		defer t.Stop()
 		data := []byte("hoge\n")
 		for {
@@ -85,11 +86,37 @@ func main() {
 			case <-ctx.Done():
 				return
 			case <-t.C:
-				fmt.Printf("%d bytes data send to %s\n", len(data), peer)
-				conn.Write(data, tcp.ControlFlag(tcp.SYN), nil)
-				// conn.Write(data, tcp.ControlFlag(tcp.ACK), nil)
+				// tcp 3way handshake
+				switch conn.Cb.State {
+				case tcp.Close:
+					{
+						fmt.Printf("SYN send to %s\n", peer)
+						conn.Write(nil, tcp.ControlFlag(tcp.SYN), nil)
+					}
+				case tcp.SynSent:
+					{
+						fmt.Printf("ACK send to %s\n", peer)
+						conn.Write(nil, tcp.ControlFlag(tcp.ACK), nil)
+					}
+				case tcp.Established:
+					{
+						fmt.Printf("ACK send to %s\n", peer)
+						conn.Write(nil, tcp.ACK, nil)
+					}
+				case tcp.FirstSent:
+					{
+						fmt.Printf("%d bytes data send to %s\n", len(data), peer)
+						conn.Write(data, tcp.ACK, nil)
+					}
+				case tcp.Sent:
+					{
+						fmt.Printf("%d bytes data send to %s\n", len(data), peer)
+						conn.Write(data, tcp.ACK, nil)
+					}
+				}
 			}
 		}
+
 	}()
 	select {
 	case s := <-sig:

@@ -3,6 +3,7 @@ package tcp
 import (
 	"container/list"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/ritsuxis/go-tcpip/pkg/net"
@@ -18,6 +19,13 @@ type queueEntry struct {
 type cbEntry struct {
 	*Address
 	rxQueue chan *queueEntry
+	State   State
+	Number chan SeqAck 
+}
+
+type SeqAck struct {
+	Seq uint32
+	Ack uint32
 }
 
 type cbRepository struct {
@@ -82,7 +90,10 @@ func (repo *cbRepository) add(addr *Address) *cbEntry {
 	entry := &cbEntry{
 		Address: addr,
 		rxQueue: make(chan *queueEntry),
+		State: NewTcpState(),
+		Number: make(chan SeqAck),
 	}
+	log.Printf("Add to cbRepository: %s", entry)
 	repo.list.PushBack(entry)
 	return entry
 }

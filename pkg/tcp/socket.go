@@ -21,7 +21,7 @@ func Dial(local, remote *Address) (*Conn, error) {
 		return nil, fmt.Errorf("dial failure")
 	}
 	return &Conn{
-		cb:   entry,
+		Cb:   entry,
 		peer: remote,
 	}, nil
 }

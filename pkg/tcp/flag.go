@@ -22,3 +22,7 @@ func (f ControlFlag) check(bit ControlFlag, c string) string {
 		return "-"
 	}
 }
+
+func (f ControlFlag) isSet(bit ControlFlag) bool {
+	return bit&f != 0
+}

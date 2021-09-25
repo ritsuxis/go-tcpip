@@ -11,6 +11,9 @@ import (
 	"github.com/ritsuxis/go-tcpip/pkg/net"
 )
 
+var seq uint32
+var ack uint32
+
 type Conn struct {
 	Cb   *cbEntry
 	peer *Address
@@ -68,7 +71,7 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 	} else if conn.Cb.State == Sent {
 		sa := <-entry.Number
 		hdr.SequenceNumber = sa.Ack
-		hdr.ACKNumber = sa.Seq + uint32(unsafe.Sizeof(data))
+		hdr.ACKNumber = sa.Seq // + uint32(unsafe.Sizeof(data)) - 20 + 1
 	}
 
 	conn.Cb.State = conn.Cb.State.TransitionSnd(flag)
@@ -112,4 +115,11 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 	binary.BigEndian.PutUint16(b[16:18], packet.Checksum)
 	packet.dump()
 	return iface.Tx(net.ProtocolNumberTCP, b, peer.Addr)
+}
+
+func larger(x uint32, y uint32) uint32 {
+	if x < y {
+		return y
+	}
+	return x
 }

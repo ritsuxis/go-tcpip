@@ -14,6 +14,8 @@ import (
 func init() {
 	ip.RegisterProtocol(net.ProtocolNumberTCP, rxHandler)
 	repo = newCbRepository()
+	seq = 0
+	ack = 0
 }
 
 func Init() {
@@ -36,9 +38,13 @@ func rxHandler(iface net.ProtocolInterface, data []byte, src, dst net.ProtocolAd
 
 	entry.State = entry.State.TransitionRcv(flag)
 	log.Printf("Rcv: Now TCP state is %s", entry.State)
+	seq = larger(packet.SequenceNumber, seq)
+	println("now seq: %d", seq)
+	ack = larger(packet.ACKNumber, ack)
+	println("now ack:%d", ack)
 	entry.Number <- SeqAck{
-		Seq: packet.SequenceNumber,
-		Ack: packet.ACKNumber,
+		Seq: seq,
+		Ack: ack,
 	}
 
 	queueEntry := &queueEntry{

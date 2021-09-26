@@ -2,6 +2,21 @@
 goによるtcp/ipプロトコルスタックの実装  
 [lectcp](https://github.com/pandax381/lectcp)と[gotcp](https://github.com/terassyi/gotcp)を参考にしています
 
+## できること・できないこと
+### [lectcp](https://github.com/pandax381/lectcp)から拡張してできること
+- TCPヘッダーの生成
+- flagの指定
+- クライアント側のthree way handshaking
+- データ送信
+- 送信終了時のFINの処理
+
+### できないこと
+- 再送処理
+- パケット分割
+- ウィンドウ制御
+- フロー制御
+- サーバ側
+
 ## Prepare
 ### tap device
 ```

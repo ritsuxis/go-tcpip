@@ -43,8 +43,8 @@ func rxHandler(iface net.ProtocolInterface, data []byte, src, dst net.ProtocolAd
 	ack = larger(packet.ACKNumber, ack)
 	println("now ack:%d", ack)
 	entry.Number <- SeqAck{
-		Seq: seq,
-		Ack: ack,
+		Seq: packet.SequenceNumber,
+		Ack: packet.ACKNumber,
 	}
 
 	queueEntry := &queueEntry{

@@ -19,7 +19,6 @@ type Conn struct {
 }
 
 func (conn *Conn) Close() {
-	// TODO
 }
 
 func getAppropriateInterface(local, remote net.ProtocolAddress) net.ProtocolInterface {
@@ -37,11 +36,11 @@ func (conn *Conn) Write(data []byte, flag ControlFlag, ops Options) error {
 }
 
 func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Options) error {
-	hdr := header {
-		SourcePort: conn.Cb.Port,
+	hdr := header{
+		SourcePort:      conn.Cb.Port,
 		DestinationPort: peer.Port,
-		WindowSize: winSize, // TODO: 受信側のサイズに合わせて変える
-		Urgent: 0,
+		WindowSize:      winSize, // TODO: 受信側のサイズに合わせて変える
+		Urgent:          0,
 	}
 
 	// tcp state
@@ -65,16 +64,23 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 		sa := <-entry.Number
 		hdr.SequenceNumber = sa.Ack
 		hdr.ACKNumber = sa.Seq
+	} else if conn.Cb.State == Fin1 {
+		sa := <-entry.Number
+		hdr.SequenceNumber = sa.Ack
+		hdr.ACKNumber = sa.Seq
+	} else if conn.Cb.State == Fin2 {
+		sa := <-entry.Number
+		hdr.SequenceNumber = sa.Ack
+		hdr.ACKNumber = sa.Seq + 1
 	}
 
 	conn.Cb.State = conn.Cb.State.TransitionSnd(flag)
 	log.Printf("Snd: Now TCP state is %s", conn.Cb.State)
 
-
 	buf := new(bytes.Buffer)
 
 	// option handle
-	var opLength = 0 
+	var opLength = 0
 	if ops != nil { // optionが指定されていた時
 		for _, op := range ops {
 			opLength += op.Length()
@@ -86,10 +92,10 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 				ops = append(ops, NoOperation{})
 			}
 		}
-		hdr.OffsetCtrFlag = makeOffsetCtrlFlag(uint8(int(unsafe.Sizeof(hdr)) + opLength + eolPadding), flag)
+		hdr.OffsetCtrFlag = makeOffsetCtrlFlag(uint8(int(unsafe.Sizeof(hdr))+opLength+eolPadding), flag)
 		binary.Write(buf, binary.BigEndian, &hdr)
 		binary.Write(buf, binary.BigEndian, &ops)
-	}else {
+	} else {
 		hdr.OffsetCtrFlag = makeOffsetCtrlFlag(uint8(unsafe.Sizeof(hdr)), flag)
 		binary.Write(buf, binary.BigEndian, &hdr)
 	}
@@ -99,7 +105,7 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 	packet := packet{
 		header: hdr,
 		option: ops,
-		data: data,
+		data:   data,
 	}
 
 	iface := getAppropriateInterface(conn.Cb.Addr, peer.Addr)

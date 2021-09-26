@@ -55,6 +55,18 @@ func (s State) TransitionRcv(flag ControlFlag) State {
 			}
 			return Close
 		}
+	case Fin1:
+		if flag.isSet(ACK) {
+			return Fin2
+		}
+		return Fin1
+	case Fin2:
+		if flag.isSet(FIN) {
+			return TW
+		}
+		return Fin2
+	case TW:
+		return TW
 	default:
 		return Close
 	}
@@ -79,24 +91,13 @@ func (s State) TransitionSnd(flag ControlFlag) State {
 			}
 			return Sent
 		}
-	default:
-		return Close
-	}
-}
-
-func (s State) TransitionEnd(flag ControlFlag) State {
-	switch s {
 	case Fin1:
-		if flag.isSet(ACK) {
-			return Fin2
-		}
 		return Fin1
 	case Fin2:
-		if flag.isSet(FIN) {
-			return TW
-		}
-		return Fin2
+		return TW
+	case TW:
+		return TW
 	default:
-		return Fin1
+		return Close
 	}
 }

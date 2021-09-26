@@ -75,6 +75,7 @@ func main() {
 	// launch send loop
 	ctx, cancel := context.WithCancel(context.Background())
 	wg := &sync.WaitGroup{}
+	count := 0
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -86,6 +87,10 @@ func main() {
 			case <-ctx.Done():
 				return
 			case <-t.C:
+				count++
+				if count == 20 {
+					conn.Cb.State = tcp.Fin1
+				}
 				// tcp 3way handshake
 				switch conn.Cb.State {
 				case tcp.Close:
@@ -108,6 +113,20 @@ func main() {
 						fmt.Printf("%d bytes data send to %s\n", len(data), peer)
 						conn.Write(data, tcp.ACK, nil)
 					}
+				case tcp.Fin1:
+					{
+						fmt.Printf("Close start\n")
+						conn.Write(nil, tcp.FIN | tcp.ACK, nil)
+					}
+				case tcp.Fin2:
+				    {
+						fmt.Printf("Fin\n")
+						conn.Write(nil, tcp.ACK, nil)
+					}
+				case tcp.TW:
+					fmt.Printf("TCP sample is finish\n")
+					fmt.Println("Push ctrl+c")
+					return
 				}
 			}
 		}

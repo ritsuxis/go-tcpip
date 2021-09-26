@@ -6,8 +6,10 @@ const (
 	Close       State = "CLOSE"
 	SynSent     State = "SYNSENT"
 	Established State = "ESTABLISHED"
-	FirstSent State = "FIRSTSENT"
 	Sent        State = "SENT"
+	Fin1        State = "FINWAIT 1"
+	Fin2        State = "FINWAIT 2"
+	TW          State = "TIME WAIT"
 )
 
 type State string
@@ -35,7 +37,7 @@ func (s State) TransitionRcv(flag ControlFlag) State {
 	case Established:
 		{
 			if flag.isSet(ACK) {
-				return FirstSent
+				return Sent
 			}
 			// 強制終了をもらったとき
 			if flag.isSet(RST) {
@@ -43,8 +45,6 @@ func (s State) TransitionRcv(flag ControlFlag) State {
 			}
 			return Close
 		}
-	case FirstSent:
-		return FirstSent
 	case Sent:
 		{
 			if flag.isSet(ACK) {
@@ -72,8 +72,6 @@ func (s State) TransitionSnd(flag ControlFlag) State {
 		return SynSent
 	case Established:
 		return Established
-	case FirstSent:
-		return Sent
 	case Sent:
 		{
 			if flag.isSet(FIN) {
@@ -83,5 +81,22 @@ func (s State) TransitionSnd(flag ControlFlag) State {
 		}
 	default:
 		return Close
+	}
+}
+
+func (s State) TransitionEnd(flag ControlFlag) State {
+	switch s {
+	case Fin1:
+		if flag.isSet(ACK) {
+			return Fin2
+		}
+		return Fin1
+	case Fin2:
+		if flag.isSet(FIN) {
+			return TW
+		}
+		return Fin2
+	default:
+		return Fin1
 	}
 }

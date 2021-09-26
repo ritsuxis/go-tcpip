@@ -11,8 +11,7 @@ import (
 	"github.com/ritsuxis/go-tcpip/pkg/net"
 )
 
-var seq uint32
-var ack uint32
+var winSize uint16
 
 type Conn struct {
 	Cb   *cbEntry
@@ -41,9 +40,7 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 	hdr := header {
 		SourcePort: conn.Cb.Port,
 		DestinationPort: peer.Port,
-		// SequenceNumber: conn.cb.seq, // TODO: ctrl seq num
-		// ACKNumber: conn.cb.ack + uint32(unsafe.Sizeof(data)), // TODO: ctrl ack num
-		WindowSize: 0, // TODO: 受信側のサイズに合わせて変える
+		WindowSize: winSize, // TODO: 受信側のサイズに合わせて変える
 		Urgent: 0,
 	}
 
@@ -64,14 +61,10 @@ func (conn *Conn) WriteTo(data []byte, peer *Address, flag ControlFlag, ops Opti
 		sa := <-entry.Number
 		hdr.SequenceNumber = sa.Ack
 		hdr.ACKNumber = sa.Seq + 1
-	} else if conn.Cb.State == FirstSent {
-		sa := <-entry.Number
-		hdr.SequenceNumber = sa.Ack
-		hdr.ACKNumber = sa.Seq + 1
 	} else if conn.Cb.State == Sent {
 		sa := <-entry.Number
 		hdr.SequenceNumber = sa.Ack
-		hdr.ACKNumber = sa.Seq // + uint32(unsafe.Sizeof(data)) - 20 + 1
+		hdr.ACKNumber = sa.Seq
 	}
 
 	conn.Cb.State = conn.Cb.State.TransitionSnd(flag)

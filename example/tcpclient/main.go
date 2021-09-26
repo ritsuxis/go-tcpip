@@ -103,11 +103,6 @@ func main() {
 						fmt.Printf("ACK send to %s\n", peer)
 						conn.Write(nil, tcp.ACK, nil)
 					}
-				case tcp.FirstSent:
-					{
-						fmt.Printf("%d bytes data send to %s\n", len(data), peer)
-						conn.Write(data, tcp.ACK, nil)
-					}
 				case tcp.Sent:
 					{
 						fmt.Printf("%d bytes data send to %s\n", len(data), peer)
